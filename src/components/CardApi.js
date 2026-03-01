@@ -9,7 +9,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 
 
-export default function CardApi({ onAddCard }) 
+export default function CardApi({ onAddCard, onDeleteCard }) 
 {
     const [cards, setCards] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -18,8 +18,14 @@ export default function CardApi({ onAddCard })
     const [cardLevel, setCardLevel] = useState();
     const [attack, setAttack] = useState();
     const [defense, setDefense] = useState();
+    const [attribute, setAttribute] = useState();
     const [isHovered, setIsHovered] = useState(false);
     const [card, setCard] = useState();
+
+    const [filters, setFilters] = useState({
+    name: '', frameType: 'All',// Monster, Spell, Trap, Synchro, Xyz, etc.
+    level: 'All', attribute: 'All', atk: '', def: ''
+  });
 
     // 1. Fetch data from YGOPRODeck API [3]
     useEffect(() => {
@@ -36,10 +42,15 @@ export default function CardApi({ onAddCard })
       setCard(null);
     }
 
+    const handleDelete = (event) => {
+      onDeleteCard(card);
+    }
+
   // 2. Filter logic: Filter cards based on search input [4]
 
     const frameTypes = ["All", ...new Set(cards.map(card => card.frameType))];
     const cardLevels = ['', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    const attributes = ['', ...new Set(cards.map(card => card.attribute))];
 
     const filteredCards = cards.filter(card => {
         const matchesText = card.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -48,9 +59,12 @@ export default function CardApi({ onAddCard })
         const matchesLevel = cardLevel === '' || card.level === parseInt(cardLevel);
         const matchesAttack = attack === parseInt(card.attack);
         const matchesDefense = defense === parseInt(card.defense);
-        return matchesText && (matchesFrame && matchesLevel) || matchesAttack && matchesDefense;
+        const matchesAttribute = attribute === card.attribute;
+        return matchesText && matchesFrame && matchesLevel && matchesAttribute || matchesAttack && matchesDefense;
     },
-  [cards, searchTerm, selectedFrame, cardLevel]);
+  [cards, searchTerm, selectedFrame, cardLevel, attribute]);
+
+
 
   if (loading) return <div>Loading...</div>;
 
@@ -90,6 +104,14 @@ export default function CardApi({ onAddCard })
             ))} */}
           </select>
         </div>
+        <div>
+            <select class="form-select" onChange={(e) => setAttribute(e.target.value)} value={attribute}>
+              <option selected>Attribute</option>
+            {attributes.map(type => (
+              <option key={type} value={type}>{type}</option>
+            ))}
+          </select>
+        </div>
         
     </div>
       
@@ -103,7 +125,7 @@ export default function CardApi({ onAddCard })
             onMouseEnter={() => setIsHovered(true)}
             OnMouseLeave={() => setIsHovered(false)} style={{paddingBottom: "15px"}}>
             <img src={card.card_images[0].image_url_small} alt={card.name} className="card-image"/>
-              <Button onClick={() => console.log('Delete')} variant="outline-danger">- </Button>
+              <Button onClick={() => onDeleteCard(card.id)} variant="outline-danger">- </Button>
               <OverlayTrigger trigger="click" placement="left" overlay={<Popover id="popover-basic">
                 <Container fluid="md">
                   
