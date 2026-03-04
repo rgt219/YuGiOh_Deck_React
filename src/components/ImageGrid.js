@@ -6,6 +6,7 @@ import { Tooltip } from "react-tooltip";
 import 'react-tooltip/dist/react-tooltip.css'
 import { SplitPane } from 'react-split-pane';
 import ImagePopup from "./ImagePopup";
+import ImageOverlay from "./ImageOverlay";
 
 
 
@@ -19,9 +20,11 @@ export default function ImageGrid({archetype, yugipedia})
             {
                 archetype.deckList.main.map(x => (
                         <div className="gallery__item">
-                            <ImagePopup archetype={x} image={`/images/${x.image}`} effect={x.effect} yugipedia={x.yugipedia}>
+                            {/* <ImagePopup archetype={x} image={`/images/${x.image}`} effect={x.effect} yugipedia={x.yugipedia}>
                                 
-                            </ImagePopup>
+                            </ImagePopup> */}
+
+                            <ImageOverlay archetype={x} image={`/images/${x.image}`} effect={x.effect} yugipedia={x.yugipedia}></ImageOverlay>
                             
                         </div>
                 ))

@@ -8,8 +8,20 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 
+export const deckList = {
+      mainDeck: [],
+      extraDeck: [
 
-export default function CardApi({ onAddCard, onDeleteCard }) 
+      ], 
+      sideDeck: [
+
+      ],
+      id: '30',
+      title: ''
+    }
+
+
+export default function CardApi({ onAddCard, onDeleteCard, cardList }) 
 {
     const [cards, setCards] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -23,9 +35,10 @@ export default function CardApi({ onAddCard, onDeleteCard })
     const [card, setCard] = useState();
 
     const [filters, setFilters] = useState({
-    name: '', frameType: 'All',// Monster, Spell, Trap, Synchro, Xyz, etc.
-    level: 'All', attribute: 'All', atk: '', def: ''
-  });
+      name: '', 
+      frameType: 'All',// Monster, Spell, Trap, Synchro, Xyz, etc.
+      level: 'All', attribute: 'All', atk: '', def: ''
+    });
 
     // 1. Fetch data from YGOPRODeck API [3]
     useEffect(() => {
@@ -37,6 +50,25 @@ export default function CardApi({ onAddCard, onDeleteCard })
         });
     }, []);
 
+    fetch("https://localhost:7276/api/mongodb/DeckListMongoDb")
+      .then(response => {
+        // Clone the response so it can be read in both the console and the next .then()
+        const responseClone = response.clone(); 
+        // Check if the response status is in the 200 range (success)
+        if (!response.ok) { 
+          // Log the raw HTML error page content
+          responseClone.text().then(text => console.error('Server Response (HTML):', text));
+          throw new Error('Network response was not ok');
+        }
+        return response.json(); // Attempt to parse as JSON
+      })
+      .then(data => {
+        //console.log('JSON Data:', data);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+
     const handleSubmit = (event) => {
       onAddCard(card);
       setCard(null);
@@ -46,11 +78,15 @@ export default function CardApi({ onAddCard, onDeleteCard })
       onDeleteCard(card);
     }
 
+    // fetchDataFromApiFetch();
+
   // 2. Filter logic: Filter cards based on search input [4]
 
     const frameTypes = ["All", ...new Set(cards.map(card => card.frameType))];
     const cardLevels = ['', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
     const attributes = ['', ...new Set(cards.map(card => card.attribute))];
+
+    
 
     const filteredCards = cards.filter(card => {
         const matchesText = card.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -60,7 +96,7 @@ export default function CardApi({ onAddCard, onDeleteCard })
         const matchesAttack = attack === parseInt(card.attack);
         const matchesDefense = defense === parseInt(card.defense);
         const matchesAttribute = attribute === card.attribute;
-        return matchesText && matchesFrame && matchesLevel && matchesAttribute || matchesAttack && matchesDefense;
+        return matchesText && matchesFrame && matchesLevel && (matchesAttribute || matchesAttack || matchesDefense);
     },
   [cards, searchTerm, selectedFrame, cardLevel, attribute]);
 
@@ -82,7 +118,7 @@ export default function CardApi({ onAddCard, onDeleteCard })
       <div class="d-flex gap-3">
         <div>
               <select id="frame_select" class="form-select"onChange={(e) => setSelectedFrame(e.target.value)} value={selectedFrame}>
-                <option selected>Frame Type</option>
+                <option defaultValue key={selectedFrame}>Frame Type</option>
                 {frameTypes.map(type => (
                   <option key={type} value={type}>{type}</option>
                 ))}
@@ -90,7 +126,7 @@ export default function CardApi({ onAddCard, onDeleteCard })
         </div>
         <div>
             <select class="form-select" onChange={(e) => setCardLevel(e.target.value)} value={cardLevel}>
-              <option selected>Level</option>
+              <option defaultValue key={cardLevel}>Level</option>
             {cardLevels.map(type => (
               <option key={type} value={type}>{type}</option>
             ))}
@@ -98,7 +134,7 @@ export default function CardApi({ onAddCard, onDeleteCard })
         </div>
         <div>
             <select class="form-select" onChange={(e) => setAttack(e.target.value)} value={cardLevel}>
-              <option selected>Attack</option>
+              <option defaultValue key={attack}>Attack</option>
             {/* {attack.map(type => (
               <option key={type} value={type}>{type}</option>
             ))} */}
@@ -106,7 +142,7 @@ export default function CardApi({ onAddCard, onDeleteCard })
         </div>
         <div>
             <select class="form-select" onChange={(e) => setAttribute(e.target.value)} value={attribute}>
-              <option selected>Attribute</option>
+              <option defaultValue key={attribute}>Attribute</option>
             {attributes.map(type => (
               <option key={type} value={type}>{type}</option>
             ))}
@@ -161,22 +197,23 @@ export default function CardApi({ onAddCard, onDeleteCard })
                 /> */}
                 <Button onClick={() => {
                   const newCard = {
-                    id: card.id,
-                    name: card.name,
-                    type: card.type,
+                    id: String(card.id),
+                    name: String(card.name),
+                    type: String(card.type),
                     frameType: card.frameType,
-                    desc: card.desc,
-                    atk: card.atk,
-                    def: card.def,
-                    level: card.level,
-                    race: card.race,
-                    atribute: card.attribute,
+                    desc: String(card.desc),
+                    atk: parseInt(card.atk),
+                    def: parseInt(card.def),
+                    level: parseInt(card.level),
+                    race: String(card.race),
+                    attribute: String(card.attribute),
                     image: card.card_images[0].image_url_small
                   }
 
                   onAddCard(newCard);
 
-                  console.log(newCard);
+                  deckList.mainDeck.push(newCard);
+                  console.log(deckList);
                 }}  variant="outline-success">+</Button>
               {/* </form> */}
             
