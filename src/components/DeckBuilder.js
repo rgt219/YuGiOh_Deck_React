@@ -28,10 +28,12 @@ export default function DeckBuilder()
 
     const deleteCard = (cardId) => {
         const newCardList = [...cardList];
-        const index = newCardList.findIndex(card => card.id === cardId);
+        const index = newCardList.findIndex(card => parseInt(card.id) === parseInt(cardId));
         if (index > -1) {
             newCardList.splice(index, 1);
             setCardList(newCardList);
+        } else {
+            console.log("cannot delete card");
         }
     }
 
@@ -41,7 +43,7 @@ export default function DeckBuilder()
         deckList.title = String(deckName);
         deckList.id = (String)(Math.floor(Math.random() * (1000000 - 1 + 1)) + 1);
         
-      const response = await fetch("https://localhost:7276/api/mongodb/DeckListMongoDb", {
+      const response = await fetch("http://localhost:5000/api/mongodb/DeckListMongoDb", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

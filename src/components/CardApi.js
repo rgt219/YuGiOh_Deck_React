@@ -7,6 +7,7 @@ import Popover from 'react-bootstrap/Popover';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import { Navbar, Form, FormControl, NavDropdown, Nav, Card } from 'react-bootstrap';
 
 export const deckList = {
       mainDeck: [],
@@ -50,7 +51,7 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
         });
     }, []);
 
-    fetch("https://localhost:7276/api/mongodb/DeckListMongoDb")
+    fetch("http://localhost:5000/api/mongodb/DeckListMongoDb")
       .then(response => {
         // Clone the response so it can be read in both the console and the next .then()
         const responseClone = response.clone(); 
@@ -85,6 +86,9 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
     const frameTypes = ["All", ...new Set(cards.map(card => card.frameType))];
     const cardLevels = ['', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
     const attributes = ['', ...new Set(cards.map(card => card.attribute))];
+    const [frameDropTitle, setFrameDropTitle] = useState('Frame');
+    const [levelDropTitle, setLevelDropTitle] = useState('Level');
+    const [attributeDropTitle, setAttributeDropTitle] = useState('Attribute');
 
     
 
@@ -100,23 +104,49 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
     },
   [cards, searchTerm, selectedFrame, cardLevel, attribute]);
 
+  const handleFrameDropdown = (eventKey, event) => {
+    // eventKey contains the value passed from Dropdown.Item eventKey prop
+    setFrameDropTitle(eventKey); 
+  };
+
+  const handleLevelDropdown = (eventKey, event) => {
+    // eventKey contains the value passed from Dropdown.Item eventKey prop
+    setLevelDropTitle(eventKey);
+    console.log(levelDropTitle);
+  };
+
+  const handleAttributeDropdown = (eventKey, event) => {
+    // eventKey contains the value passed from Dropdown.Item eventKey prop
+    setAttributeDropTitle(eventKey);
+    console.log(attributeDropTitle);
+  };
+
 
 
   if (loading) return <div>Loading...</div>;
 
   return (
     <div>
-      <input 
-                type="text"
-                className="search-input"
-                placeholder="Search for a card..."
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{color: "white"}}>
-                
-      </input>
+      <Navbar expand="lg">
+      <Container fluid>
+        <Navbar.Toggle aria-controls="navbarScroll" />
+        <Navbar.Collapse id="navbarScroll">
+          <Form className="w-100">
+            <Form.Control
+              type="search"
+              placeholder="Search for a card..."
+              aria-label="Search"
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ backgroundColor: '#f0f0f0', color: '#333' }}
+              expand="lg"
+            />
+          </Form>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
       
       <div class="d-flex gap-3">
-        <div>
+        <div style={{width: "25%"}}>
               <select id="frame_select" class="form-select"onChange={(e) => setSelectedFrame(e.target.value)} value={selectedFrame}>
                 <option defaultValue key={selectedFrame}>Frame Type</option>
                 {frameTypes.map(type => (
@@ -124,15 +154,15 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
                 ))}
               </select>
         </div>
-        <div>
-            <select class="form-select" onChange={(e) => setCardLevel(e.target.value)} value={cardLevel}>
+        <div style={{width: "25%"}}>
+            <select class="form-select" onChange={(e) => setCardLevel(e.target.value)} value={parseInt(cardLevel)}>
               <option defaultValue key={cardLevel}>Level</option>
             {cardLevels.map(type => (
               <option key={type} value={type}>{type}</option>
             ))}
           </select>
         </div>
-        <div>
+        <div style={{width: "25%"}}>
             <select class="form-select" onChange={(e) => setAttack(e.target.value)} value={cardLevel}>
               <option defaultValue key={attack}>Attack</option>
             {/* {attack.map(type => (
@@ -140,7 +170,7 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
             ))} */}
           </select>
         </div>
-        <div>
+        <div style={{width: "25%"}}>
             <select class="form-select" onChange={(e) => setAttribute(e.target.value)} value={attribute}>
               <option defaultValue key={attribute}>Attribute</option>
             {attributes.map(type => (
@@ -160,7 +190,47 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
             className="card-container"
             onMouseEnter={() => setIsHovered(true)}
             OnMouseLeave={() => setIsHovered(false)} style={{paddingBottom: "15px"}}>
-            <img src={card.card_images[0].image_url_small} alt={card.name} className="card-image"/>
+
+            <OverlayTrigger
+              key='left'
+              placement='left'
+              overlay={
+                <Card style={{ width: '36rem' }} bg="dark" text="white">
+                  <Card.Body>
+                    <Container style={{margin: 0}}>
+                      <Row>
+                        <Col>
+                          <Card.Title style={{fontFamily: "Cascadia Mono"}}>
+                            {card.name}
+                          </Card.Title>
+                        </Col>
+                        <Col xs lg="3">
+                          {card.attribute} | 
+                          <img src={"/images/level.png"} alt="" style={{width: "15px", height: "15px"}}/>{card.level}
+                        </Col>
+                      </Row>
+                    </Container>
+                    <Card.Subtitle className="mb-2 text-grey">
+                      {card.race} / {card.type}
+                    </Card.Subtitle>
+                    <Card.Text bg="dark">
+                      {card.desc}
+                    </Card.Text>
+                  </Card.Body>
+                </Card>
+          }
+        >
+            <img class="card_details" src={card.card_images[0].image_url_small} alt=""/>
+
+
+        </OverlayTrigger>
+
+
+
+
+
+
+
               <Button onClick={() => onDeleteCard(card.id)} variant="outline-danger">- </Button>
               <OverlayTrigger trigger="click" placement="left" overlay={<Popover id="popover-basic">
                 <Container fluid="md">
@@ -185,7 +255,7 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
                             {card.desc}
                           </Popover.Body>
                         </Popover>}>
-                  <Button onClick={() => console.log('Info')}  variant="outline-info" className="cascadia-font">info   </Button>
+                  <Button onClick={() => console.log('Info')}  variant="outline-info" className="">info   </Button>
               </OverlayTrigger>
 
               {/* <form onSubmit={handleSubmit}>
