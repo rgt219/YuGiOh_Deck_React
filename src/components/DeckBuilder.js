@@ -2,7 +2,7 @@ import React, { useState }from "react";
 import { SplitPane } from "react-split-pane";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Carousel from 'react-bootstrap/Carousel';
-import { Card, Button, Container, Row, Col } from 'react-bootstrap';
+import { Card, Button, Container, Row, Col, Modal } from 'react-bootstrap';
 import CardApi from "../components/CardApi";
 import InputGroup from 'react-bootstrap/InputGroup';
 import Form from 'react-bootstrap/Form';
@@ -16,6 +16,8 @@ export default function DeckBuilder()
 {
     const [cardList, setCardList] = useState([]);
     const [deckName, setDeckName] = useState('');
+    const [show, setShow] = useState(false);
+    const handleClose = () => setShow(false);
 
     const handleTextareaChange = (event) => {
         // Update the state with the current value from the input field
@@ -52,6 +54,7 @@ export default function DeckBuilder()
       });
 
       console.log(response.body);
+      setShow(true);
 
       if (response.ok) {
         // Handle success
@@ -86,6 +89,23 @@ export default function DeckBuilder()
                     </div>
                 </div>
             </div>
+
+
+
+            <Modal show={show} onHide={handleClose}>
+                <Modal.Header closeButton>
+                <Modal.Title>Modal heading</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>Woohoo, you are reading this text in a modal!</Modal.Body>
+                <Modal.Footer>
+                <Button variant="secondary" onClick={handleClose}>
+                    Close
+                </Button>
+                <Button variant="primary" onClick={handleClose}>
+                    Save Changes
+                </Button>
+                </Modal.Footer>
+            </Modal>
         </>
     )
 }

@@ -70,27 +70,11 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
         console.error('Error fetching data:', error);
       });
 
-    const handleSubmit = (event) => {
-      onAddCard(card);
-      setCard(null);
-    }
-
-    const handleDelete = (event) => {
-      onDeleteCard(card);
-    }
-
-    // fetchDataFromApiFetch();
-
   // 2. Filter logic: Filter cards based on search input [4]
 
     const frameTypes = ["All", ...new Set(cards.map(card => card.frameType))];
     const cardLevels = ['', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
     const attributes = ['', ...new Set(cards.map(card => card.attribute))];
-    const [frameDropTitle, setFrameDropTitle] = useState('Frame');
-    const [levelDropTitle, setLevelDropTitle] = useState('Level');
-    const [attributeDropTitle, setAttributeDropTitle] = useState('Attribute');
-
-    
 
     const filteredCards = cards.filter(card => {
         const matchesText = card.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -103,25 +87,6 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
         return matchesText && matchesFrame && matchesLevel && (matchesAttribute || matchesAttack || matchesDefense);
     },
   [cards, searchTerm, selectedFrame, cardLevel, attribute]);
-
-  const handleFrameDropdown = (eventKey, event) => {
-    // eventKey contains the value passed from Dropdown.Item eventKey prop
-    setFrameDropTitle(eventKey); 
-  };
-
-  const handleLevelDropdown = (eventKey, event) => {
-    // eventKey contains the value passed from Dropdown.Item eventKey prop
-    setLevelDropTitle(eventKey);
-    console.log(levelDropTitle);
-  };
-
-  const handleAttributeDropdown = (eventKey, event) => {
-    // eventKey contains the value passed from Dropdown.Item eventKey prop
-    setAttributeDropTitle(eventKey);
-    console.log(attributeDropTitle);
-  };
-
-
 
   if (loading) return <div>Loading...</div>;
 
@@ -224,13 +189,6 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
 
 
         </OverlayTrigger>
-
-
-
-
-
-
-
               <Button onClick={() => onDeleteCard(card.id)} variant="outline-danger">- </Button>
               <OverlayTrigger trigger="click" placement="left" overlay={<Popover id="popover-basic">
                 <Container fluid="md">
