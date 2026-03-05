@@ -42,7 +42,7 @@ export default function UserProfile({ user }) {
                             <h2 className="text-info m-0" style={{ fontFamily: 'Cascadia Mono' }}>
                                 {user.firstName?.toUpperCase()}_{user.lastName?.toUpperCase()}
                             </h2>
-                            <p className="text-muted m-0">RANK: DUELIST // ID: {user.id}</p>
+                            <p className=" m-0">RANK: DUELIST // ID: {user.id}</p>
                         </Col>
                         <Col xs="auto" className="text-end">
                             <div className="text-info">DECKS_ARCHIVED: {userDecks.length}</div>
@@ -63,7 +63,8 @@ export default function UserProfile({ user }) {
                                         <Card.Body className="d-flex flex-column justify-content-between">
                                             <div>
                                                 <h5 className="text-info">{deck.title?.toUpperCase()}</h5>
-                                                <p className="text-muted small">
+                                                <img src={deck.mainDeck[0].image} alt="" style={{width: "100%", height: "85%"}}/>
+                                                <p className="md-text-disabled small">
                                                     MAIN: {deck.mainDeck?.length || 0} | 
                                                     EXTRA: {deck.extraDeck?.length || 0}
                                                 </p>
