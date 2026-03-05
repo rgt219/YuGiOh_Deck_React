@@ -8,49 +8,61 @@ import ImagePopup from './ImagePopup';
 import CardApi from './CardApi';
 
 export default function DeckDetails({archetype}) {
-
     const { deckId } = useParams();
     const decks = useContext(DecksContext);
     const deck = decks.find(d => d.id === parseInt(deckId));
 
-    if(deck == null)
-        return <div>Deck not found.</div>
+    if(!deck) return <div className="text-center mt-5">Deck not found.</div>
 
     return (
-        
-    <>
-        <div class="three" style={{overflow: 'visible', maxWidth: "2000px"}}>
-            <h1 class="h1 center has-text-centered svelte-1c6r74u is-uppercase">{deck.title} Deck Breakdown</h1>
-        </div>
-        <div class="card" bg-color="#2f6a9d" style={{overflow: 'visible'}}>
-            <h1>Key Cards</h1>
-            <div key={deck.id} className='decks-grid' style={{overflow: 'visible', display: 'flex'}}>
-                <img src={`/images/${deck.keyCard1}`} alt="Missing Card..." width="20%" height="20%" />
-                <img src={`/images/${deck.keyCard2}`} alt="Missing Card..." width="20%" height="20%" />
-                <img src={`/images/${deck.keyCard3}`} alt="Missing Card..." width="20%" height="20%" />
-                <img src={`/images/${deck.keyCard4}`} alt="Missing Card..." width="20%" height="20%" />
-            </div>
-        </div>
-
-        <div style={{overflow: 'hidden'}}>
+        <div className="container-fluid py-4 mt-5"> {/* Main wrapper for padding */}
             
-            <SplitPane split="vertical" defaultSize="50%">
-                <div className="left-content" 
-                style={{overflow: 'visible'}}>
-                    <h1>Sample Deck List</h1>
-                    <ImageGrid archetype={deck}></ImageGrid>
-                </div>
-                <div className="right-content">
-                    <div class="card bg-black" maxWidth="100%" maxHeight="500px" overflowY="scroll">
-                        <CardApi></CardApi>
-                    </div>
-                    
-                </div>
-            </SplitPane>
-        </div>
+            {/* Title Section */}
+            <div className="text-center mb-4">
+                <h1 className="display-4 text-uppercase fw-bold" style={{fontFamily: "Cascadia Mono", color: "#00d4ff"}}>
+                    {deck.title}
+                </h1>
+            </div>
 
-        <ImagePopup></ImagePopup>
-    </>
-        
-    )
+            {/* Key Cards Section using Glassmorphism */}
+            <div className="glass-container mb-4">
+                <h2 className="h4 mb-3" style={{fontFamily: "Cascadia Mono"}}>Key Cards</h2>
+                <div className="d-flex justify-content-around align-items-center flex-wrap gap-3">
+                    {[deck.keyCard1, deck.keyCard2, deck.keyCard3, deck.keyCard4].map((card, i) => (
+                        <img 
+                            key={i}
+                            src={`/images/${card}`} 
+                            alt="Key Card" 
+                            className="img-fluid rounded shadow-lg" 
+                            style={{ 
+                                width: "18%", 
+                                transition: "transform 0.3s ease",
+                                cursor: "pointer" 
+                            }}
+                            onMouseOver={e => e.currentTarget.style.transform = "scale(1.1)"}
+                            onMouseOut={e => e.currentTarget.style.transform = "scale(1)"}
+                        />
+                    ))}
+                </div>
+            </div>
+
+            {/* Content Area */}
+            <div style={{ height: "70vh" }}>
+                <SplitPane split="vertical" defaultSize="55%">
+                    <div className="pe-3"> {/* Padding right for separation */}
+                        <div className="glass-container h-100 overflow-auto">
+                            <ImageGrid archetype={deck} />
+                        </div>
+                    </div>
+                    <div className="ps-3"> {/* Padding left for separation */}
+                        <div className="glass-container h-100 bg-black bg-opacity-50 overflow-auto">
+                            <CardApi />
+                        </div>
+                    </div>
+                </SplitPane>
+            </div>
+
+            <ImagePopup />
+        </div>
+    );
 }

@@ -15,21 +15,27 @@ export default function ImageGrid({archetype, yugipedia})
 
     return (
         <>
-        <div class="gallery" style={{overflowX: 'visible'}}>
-           
-            {
-                archetype.deckList.main.map(x => (
-                        <div className="gallery__item">
-                            {/* <ImagePopup archetype={x} image={`/images/${x.image}`} effect={x.effect} yugipedia={x.yugipedia}>
-                                
-                            </ImagePopup> */}
-
-                            <ImageOverlay archetype={x} image={`/images/${x.image}`} effect={x.effect} yugipedia={x.yugipedia}></ImageOverlay>
-                            
-                        </div>
-                ))
-            }
+        <div className="custom-deck-container">
+      <h3 className="text-white mb-3" style={{ fontFamily: "Cascadia Mono" }}>
+        {archetype.name || "Main Deck"}
+      </h3>
+      
+      {/* This wrapper provides the dark background and scrolling */}
+      <div className="deck-scroll-area">
+        <div className="gallery" style={{ overflowX: 'visible' }}>
+          {archetype.deckList.main.map((x, index) => (
+            <div className="gallery__item" key={index}>
+              <ImageOverlay 
+                archetype={x} 
+                image={`/images/${x.image}`} 
+                effect={x.effect} 
+                yugipedia={x.yugipedia} 
+              />
+            </div>
+          ))}
         </div>
+      </div>
+    </div>
 
 </>
         

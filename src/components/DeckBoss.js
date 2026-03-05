@@ -18,46 +18,47 @@ export default function DeckBoss({deck, isDeckListed, toggleDeckList})
 
     };
 
-    return(
-        <div>
+    return (
+        <div className='deck-card-container'>
             <div key={deck.id} className='deck-boss'>
-                
-
-                <HoverVideoPlayer
-                    videoSrc={`videos/${deck.video}`}
-                    pausedOverlay={
-                        <img src={`images/${deck.image}`} alt="" 
-                        style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    }}/>
-                    }
-                    loop={true}
-                    muted={true}
-                />
-
-
-                <h3 className='deck-title'>
-                    <Link to={`/decks/${deck.id}`}>
-                        {deck.title}
-                    </Link>
-                </h3>
-                <div>
-                    <span className='deck-genre'>{deck.extraDeckType}</span>
-                    <span className={`deck-rating ${getRatingClass(deck.rating)}`}>
-                        {deck.rating}
-                    </span>
+                <div className="video-container">
+                    <HoverVideoPlayer
+                        videoSrc={`videos/${deck.video}`}
+                        pausedOverlay={
+                            <img src={`images/${deck.image}`} alt="" 
+                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
+                        }
+                        loop={true}
+                        muted={true}
+                    />
                 </div>
-                <label className="switch">
-                    <input type="checkbox" checked={isDeckListed} onChange={() => toggleDeckList(deck.id)}>
-                    </input>
-                    <span className="slider">
-                        <span className="slider-label">
-                            {isDeckListed ? "In DeckList" : "Add to DeckList"}
+
+                <div className="deck-info-overlay">
+                    <h3 className='deck-title'>
+                        <Link to={`/decks/${deck.id}`}>{deck.title}</Link>
+                    </h3>
+                    
+                    <div className="deck-stats-row">
+                        <span className='deck-genre'>{deck.extraDeckType}</span>
+                        <span className={`deck-rating-badge ${getRatingClass(deck.rating)}`}>
+                            {deck.rating}
                         </span>
-                    </span>
-                </label>
+                    </div>
+
+                    <label className="md-switch">
+                        <input 
+                            type="checkbox" 
+                            checked={isDeckListed} 
+                            onChange={() => toggleDeckList(deck.id)} 
+                        />
+                        <div className="md-slider">
+                            <div className="md-knob"></div>
+                            <span className="md-label">
+                                {isDeckListed ? "IN DECKLIST" : "ADD TO LIST"}
+                            </span>
+                        </div>
+                    </label>
+                </div>
             </div> 
         </div>
     );

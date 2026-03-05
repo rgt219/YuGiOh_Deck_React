@@ -16,7 +16,8 @@ export const deckList = {
 
       ],
       id: '30',
-      title: ''
+      title: '',
+      userId: ''
     }
 
 
@@ -30,14 +31,6 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
     const [attack, setAttack] = useState();
     const [defense, setDefense] = useState();
     const [attribute, setAttribute] = useState();
-    const [isHovered, setIsHovered] = useState(false);
-    const [card, setCard] = useState();
-
-    const [filters, setFilters] = useState({
-      name: '', 
-      frameType: 'All',// Monster, Spell, Trap, Synchro, Xyz, etc.
-      level: 'All', attribute: 'All', atk: '', def: ''
-    });
 
     // 1. Fetch data from YGOPRODeck API [3]
     useEffect(() => {
@@ -49,7 +42,7 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
         });
     }, []);
 
-    fetch("http://localhost:5276/api/mongodb/DeckListMongoDb")
+    fetch("https://localhost:5276/api/mongodb/DeckListMongoDb")
       .then(response => {
         // Clone the response so it can be read in both the console and the next .then()
         const responseClone = response.clone(); 
@@ -150,9 +143,7 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
         {filteredCards.map(card => (
             <div className="gallery__item">
           <div key={card.id} 
-            className="card-container"
-            onMouseEnter={() => setIsHovered(true)}
-            OnMouseLeave={() => setIsHovered(false)} style={{paddingBottom: "15px"}}>
+            className="card-container">
 
             <OverlayTrigger
               key='left'

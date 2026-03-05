@@ -58,6 +58,7 @@ export default function DecksGrid({decks, decklist, toggleDeckList})
 
     return (
         <div>
+            <h3 className="text-info">Below are a few of my favorite decks to play in the TCG. Click below for more info!</h3>
             <input 
                 type="text"
                 className="search-input"

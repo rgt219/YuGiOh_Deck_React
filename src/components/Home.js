@@ -10,7 +10,8 @@ import DeckBuilder from "./DeckBuilder";
 import Footer from "./Footer";
 //import DecksGrid from "./components/DecksGrid";
 
-export default function Home() {
+
+export default function Home({user}) {
     const [decks, setDecks] = useState([]);
     const [decklist, setDeckList] = useState([]);
 
@@ -29,18 +30,16 @@ export default function Home() {
     }
     return (
         <>
-        <Carousel className="bg-dark bg-opacity-75 p-2 rounded" style={{width: "100%", height: "515px"}}>
-            <Carousel.Item>
-              <header class="absolute inset-x-0 top-0 z-50">
-                <img className='ygoss' src='./images/ygoss1.jpg' alt="yugioh" />
-              </header>
-              <Carousel.Caption>
-                <h3>First slide label</h3>
-                <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p>
-              </Carousel.Caption>
-            </Carousel.Item>
-              
-            <Carousel.Item>
+        <div className="md-theme-bg">
+            <Carousel className="md-carousel border-bottom border-info" style={{ width: "100%", height: "515px" }}>
+                <Carousel.Item>
+                    <img className='d-block w-100' src='./images/ygoss1.jpg' alt="yugioh" style={{objectFit: 'cover', height: '515px'}} />
+                    <Carousel.Caption className="bg-black bg-opacity-50 rounded">
+                        <h3 className="text-info">Welcome to ErreGeTe YGO!</h3>
+                        <p>Explore my public Yu-Gi-Oh! portfolio.</p>
+                    </Carousel.Caption>
+                </Carousel.Item>
+                <Carousel.Item>
               <header class="absolute inset-x-0 top-0 z-50">
                   <img className='ygoss' src='./images/ygoss2.jpg' alt="yugioh" />
               </header>
@@ -51,79 +50,66 @@ export default function Home() {
                   <img className='ygoss' src='./images/ygoss3.jpg' alt="yugioh" />
               </header>
             </Carousel.Item>
+            </Carousel>
+
+            <div className="container md-content-panel">
+                <nav className="mb-5">
+                    <div className="d-flex justify-content-center gap-4 flex-wrap">
+                        {[
+                            { path: "/", label: "Home", img: "./images/lenatus_art.jpg" },
+                            { path: "/decklist", label: "About", img: "./images/droplet_art.jpg" },
+                            { path: "/deckbuilder", label: "Deck Builder", img: "./images/exodia.png" }
+                        ].map((link) => {
+                            // Check if this is the deckbuilder and if user is logged out
+                            const isLocked = link.label === "Deck Builder" && !user;
+
+                            return (
+                                <Card 
+                                    as={isLocked ? "div" : Link} // Render as a div if locked to prevent navigation
+                                    to={isLocked ? null : link.path} 
+                                    key={link.label} 
+                                    className={`md-nav-card ${isLocked ? "md-card-disabled" : ""}`} 
+                                    style={{ width: '18rem', textDecoration: 'none', cursor: isLocked ? 'not-allowed' : 'pointer' }}
+                                >
+                                    <div className="md-card-img-container" style={{ position: 'relative' }}>
+                                        <Card.Img src={link.img} style={{ height: "160px", objectFit: "cover", opacity: isLocked ? 0.3 : 0.8 }} />
+                                        {isLocked && (
+                                            <div className="md-text-disabled">
+                                                <span>MUST_BE_LOGGED_IN</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <Card.Body className="p-0">
+                                        <div className={`md-card-overlay-text text-center py-2 ${isLocked ? "md-text-disabled" : "text-white"}`}>
+                                            {link.label}
+                                        </div>
+                                    </Card.Body>
+                                </Card>
+                            );
+                        })}
+                    </div>
+                </nav>
+
+                <hr className="border-info opacity-25 mb-5" />
+
+                {/* Decks Grid Section */}
+                <DecksGrid decks={decks} decklist={decklist} toggleDeckList={toggleDeckList}/>
+            </div>
             
-          </Carousel>
-          <div class="p-5 bg-secondary bg-gradient text-white text-white App">
-        <div className="container-box">
-          <Router>
-            <nav>
-              <ul>
-                <Card as={Link} to="/" style={{ width: '18rem', cursor: 'pointer', height: "200px" }} class="hover-card" className="bg-gray-500">
-                  <Card.Img variant="top"  src="./images/lenatus_art.jpg" style={{objectFit: "cover", height: "100%"}}/>
-                  <Card.ImgOverlay>
-                    <Card.Body className="text-center">
-                      <Card.Header style={{backgroundColor: "bg-primary"}}>
-                        <Card.Title className="bg-dark bg-opacity-75 p-2 rounded text-white">Home</Card.Title>
-                      </Card.Header>
-                    </Card.Body>
-                  </Card.ImgOverlay>
-                </Card>
-                <Card as={Link} to="/decklist" style={{ width: '18rem', cursor: 'pointer', height: "200px" }} class="hover-card">
-                  <Card.Img src="./images/droplet_art.jpg" style={{objectFit: "cover", height: "100%"}}/>
-                  <Card.ImgOverlay>
-                    <Card.Body className="text-center">
-                      <Card.Header style={{backgroundColor: "bg-primary"}}>
-                        <Card.Title className="bg-dark bg-opacity-75 p-2 rounded text-white">Deck List</Card.Title>
-                      </Card.Header>
-                    </Card.Body>
-                  </Card.ImgOverlay>
-                </Card>
-                <Card as={Link} to="/deckbuilder" style={{ width: '18rem', cursor: 'pointer', height: "200px" }} class="hover-card">
-                  <Card.Img src="./images/exodia.png" style={{objectFit: "cover", height: "100%"}}/>
-                  <Card.ImgOverlay>
-                    <Card.Body className="text-center">
-                      <Card.Header style={{backgroundColor: "bg-primary"}}>
-                        <Card.Title className="bg-dark bg-opacity-75 p-2 rounded text-white">Deck Builder</Card.Title>
-                      </Card.Header>
-                    </Card.Body>
-                  </Card.ImgOverlay>
-                </Card>
-                {/* <Card as={Link} to="/test" style={{ width: '18rem', cursor: 'pointer' }}>TEST</Card> */}
-              </ul>
-            </nav>
-
-            <Routes>
-              <Route 
-                path="/" 
-                element={<DecksGrid decks={decks} decklist={decklist} toggleDeckList={toggleDeckList}/>}>
-              </Route>
-
-              <Route 
-                path="/decklist" 
-                element={<DeckList decks={decks} decklist={decklist} toggleDeckList={toggleDeckList}/>}>
-              </Route>
-
-              <Route
-                path={"/decks/:deckId"}
-                element={<DeckDetails></DeckDetails>}
-                >
-              </Route>
-              <Route 
-                path="/deckbuilder" 
-                element={<DeckBuilder></DeckBuilder>}>
-              </Route>
-              <Route 
-                path="/login" 
-                element={<Login />}>
-              </Route>
-            </Routes>
-
-          </Router>
+            <Footer />
         </div>
 
+      {/* <Carousel.Item>
+              <header class="absolute inset-x-0 top-0 z-50">
+                  <img className='ygoss' src='./images/ygoss2.jpg' alt="yugioh" />
+              </header>
+            </Carousel.Item>
 
-        <Footer></Footer>
-      </div>
+            <Carousel.Item>
+              <header class="absolute inset-x-0 top-0 z-50">
+                  <img className='ygoss' src='./images/ygoss3.jpg' alt="yugioh" />
+              </header>
+            </Carousel.Item> */}
 
 </>)
 }

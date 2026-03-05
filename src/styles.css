@@ -373,15 +373,11 @@ input:checked + .slider {
 }
 
 .gallery {
-  display: grid;
-  /* Creates 6 columns of equal width */
-  grid-template-columns: repeat(4, 1fr); 
-  /* Adjust the gap between images */
-  grid-gap: 5px; 
-  /* Ensures the container adapts to screen size */
-  width: 95%; 
-  margin-top: 20px;
-  margin-left: 10px;
+    display: grid;
+    /* This tells the grid to fit as many cards as possible at 120px wide */
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
+    gap: 10px; /* Smaller gap for smaller cards */
+    padding: 10px;
 }
 
 .gallery__small {
@@ -392,15 +388,16 @@ input:checked + .slider {
   /* Ensures the container adapts to screen size */
   width: 100%; 
 }
-
 .gallery__item img {
-  /* Images fill their grid cell */
-  width: 100%; 
-  height: 100%;
-  /* Optional: maintain aspect ratio without distortion */
-  object-fit: cover; 
-  /* Optional: ensure all images have a consistent height within a row */
-  margin-top: 0px;
+    width: 100%;    /* Fills the 100px grid cell */
+    height: auto;
+    border-radius: 4px;
+    transition: transform 0.2s ease;
+}
+
+.gallery__item img:hover {
+    transform: scale(1.15); /* Slight pop when hovering */
+    z-index: 10;
 }
 
 .gallery__item__small img {
@@ -538,4 +535,69 @@ input:checked + .slider {
 .custom-tooltip {
   background-color: transparent;
   background: none;
+}
+
+/* The Outer Container */
+.custom-deck-container {
+    background: rgba(0, 0, 0, 0.6); /* Dark transparency */
+    backdrop-filter: blur(10px);    /* Frosted glass effect */
+    border-radius: 15px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    height: 100%;
+}
+
+/* The Scrollable Area */
+.deck-scroll-area {
+    height: 100%; /* Adjust based on your layout */
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 10px;
+}
+
+/* Scrollbar Styling to match the dark theme */
+.deck-scroll-area::-webkit-scrollbar {
+    width: 8px;
+}
+
+.deck-scroll-area::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.deck-scroll-area::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 10px;
+}
+
+.deck-scroll-area::-webkit-scrollbar-thumb:hover {
+    background: #444;
+}
+
+/* Add this to your styles.css */
+body {
+    background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+    min-height: 100vh;
+    color: white;
+}
+
+@keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.glass-container {
+    background: rgba(255, 255, 255, 0.05); /* Slight white tint */
+    backdrop-filter: blur(12px);           /* The frosted glass effect */
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    margin-bottom: 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }

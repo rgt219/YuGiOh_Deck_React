@@ -6,7 +6,7 @@ export default function DeckList({decks, decklist, toggleDeckList}) {
         <div>
             <h1 className="title">My DeckList</h1>
             <div className="watchlist">
-                {
+                {/* {
                     decklist.map(id => {
                         const deck = decks.find(deck => deck.id == id);
                         return <DeckBoss 
@@ -15,7 +15,7 @@ export default function DeckList({decks, decklist, toggleDeckList}) {
                             toggleDeckList={toggleDeckList} 
                             isDeckListed={true}></DeckBoss>
                     })
-                }
+                } */}
             </div>
         </div>
     )

@@ -6,8 +6,9 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import Form from 'react-bootstrap/Form';
 import CustomDeck from "./CustomDeck";
 import { deckList } from "../components/CardApi";
+import '../mdstyles.css';
 
-export default function DeckBuilder()
+export default function DeckBuilder({user})
 {
     const [cardList, setCardList] = useState([]);
     const [deckName, setDeckName] = useState('');
@@ -53,11 +54,22 @@ export default function DeckBuilder()
 
     const handleSave = async () => {
     try {
+        console.log(user);
+        if(!user || !user.id) {
+            alert("CRITICAL_ERROR: USER_ID_NOT_FOUND. LOG IN OR THIS SITE WILL SELF DESTRUCT");
+            return;
+        }
+
         console.log(JSON.stringify(deckList));
-        deckList.title = String(deckName);
+        deckList.title = String(deckName) || "NEW_DECKLIST";
         deckList.id = (String)(Math.floor(Math.random() * (1000000 - 1 + 1)) + 1);
+        deckList.userId = user.id;
+        deckList.extraDeck = [];
+        deckList.sideDeck = [];
+
+        console.log("COMMENSING_DATABASE_UPLINK");
         
-      const response = await fetch("http://localhost:5276/api/mongodb/DeckListMongoDb", {
+      const response = await fetch("https://localhost:5276/api/mongodb/DeckListMongoDb", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -82,35 +94,48 @@ export default function DeckBuilder()
   };
 
     return (
-        <>
-            <div class="container">
-                <div class="row" border>
-                    <div class="col bg-black border">
-                        <InputGroup size="sm" className="mb-3">
-                            <InputGroup.Text id="basic-addon3"> Deck Name</InputGroup.Text>
-                            <Form.Control as="textarea" aria-label="With textarea" value={deckName}  onChange={handleTextareaChange} />
-                            <Button variant="outline-secondary" id="button-addon2" onClick={() => handleSave()}>
-                                Save
-                            </Button>
-                        </InputGroup>
+        <div className="master-duel-theme py-5 mt-5">
+            <Container fluid className="px-4">
+                {/* Header Controls */}
+                <Row className="mb-4">
+                    <Col md={12} className="md-panel p-3 d-flex align-items-center justify-content-between">
+                        <div className="d-flex align-items-center gap-3 w-50">
+                            <h4 className="m-0 text-info" style={{fontFamily: 'Cascadia Mono'}}>DECK EDITOR</h4>
+                            <Form.Control 
+                                className="md-input"
+                                placeholder="ENTER DECK NAME..."
+                                value={deckName} 
+                                onChange={(e) => setDeckName(e.target.value)} 
+                            />
+                        </div>
+                        <Button className="md-btn-save" onClick={handleSave}>SAVE DECK</Button>
+                    </Col>
+                </Row>
 
-                        <CustomDeck cardList={cardList}></CustomDeck>
-                    </div>
-                    <div class="col bg-black border">
-                        <CardApi onAddCard={addCard} onDeleteCard={deleteCard} cardList={cardList}></CardApi>
-                    </div>
-                </div>
-            </div>
+                <Row className="g-4" style={{minHeight: '80vh'}}>
+                    {/* Left Side: The Deck Gallery */}
+                    <Col md={7} className="md-panel p-4">
+                        <h5 className="text-muted mb-3">MAIN DECK ({cardList.length}/60)</h5>
+                        <div className="deck-scroll-container">
+                            <CustomDeck cardList={cardList} />
+                        </div>
+                    </Col>
 
+                    {/* Right Side: Search and API */}
+                    <Col md={5} className="md-panel p-4 bg-black bg-opacity-50">
+                        <CardApi onAddCard={addCard} onDeleteCard={deleteCard} cardList={cardList} />
+                    </Col>
+                </Row>
+            </Container>
 
-
-            <Modal show={show} onHide={handleClose} >
-                <Modal.Header closeButton>
-                <Modal.Title>Success!</Modal.Title>
+            <Modal show={show} onHide={() => setShow(false)} centered contentClassName="md-modal">
+                <Modal.Header closeButton className="border-info">
+                    <Modal.Title className="text-info">SYSTEM MESSAGE</Modal.Title>
                 </Modal.Header>
-                <Modal.Body>Deck "{deckName}" has been saved.   
+                <Modal.Body className="text-center py-4">
+                    <h5>Deck "{deckName}" successfully archived to database.</h5>
                 </Modal.Body>
             </Modal>
-        </>
-    )
+        </div>
+    );
 }
