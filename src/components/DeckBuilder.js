@@ -1,14 +1,9 @@
-import React, { useState }from "react";
-import { SplitPane } from "react-split-pane";
+import React, { useState, useEffect }from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Carousel from 'react-bootstrap/Carousel';
 import { Card, Button, Container, Row, Col, Modal } from 'react-bootstrap';
 import CardApi from "../components/CardApi";
 import InputGroup from 'react-bootstrap/InputGroup';
 import Form from 'react-bootstrap/Form';
-import { useDropzone } from 'react-dropzone';
-import Dropzone from '../components/Dropzone'
-import CardInfo from './CardInfo';
 import CustomDeck from "./CustomDeck";
 import { deckList } from "../components/CardApi";
 
@@ -18,27 +13,43 @@ export default function DeckBuilder()
     const [deckName, setDeckName] = useState('');
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
-    const [filtered, setFiltered] = useState(cardList);
 
     const handleTextareaChange = (event) => {
-        // Update the state with the current value from the input field
         setDeckName(event.target.value);
-  };
+    };
     
     const addCard = (newCard) => {
-        setCardList(prevCards => [...prevCards, newCard]);
+        const uniqueId = { ...newCard, instanceId: Math.random()}
+        setCardList(prevCards => {
+            const updated = [...prevCards, uniqueId];
+            deckList.mainDeck = updated;
+            return updated;
+        });
     }
 
     const deleteCard = (cardId) => {
-        const newCardList = [...cardList];
-        const index = newCardList.findIndex(card => parseInt(card.id) === parseInt(cardId));
-        if (index > -1) {
-            newCardList.splice(index, 1);
-            setCardList(newCardList);
-        } else {
-            console.log("cannot delete card");
-        }
+        setCardList(prevCards => {
+            const index = prevCards.findIndex(card => parseInt(card.id) === parseInt(cardId));
+            if (index > -1) {
+                const newCards = [...prevCards];
+                newCards.splice(index, 1);
+                
+                // ALSO update your global deckList here if you must use it
+                deckList.mainDeck = newCards; 
+                
+                return newCards; // This new reference triggers the UI update
+            } else {
+                console.log("cant delete card")
+            }
+            return prevCards;
+        });
     }
+
+    useEffect(() => {
+        // Whenever cardList changes, force the global deckList to match it
+        deckList.mainDeck = cardList;
+        console.log("Global DeckList Synced:", deckList.mainDeck);
+    }, [cardList]);
 
     const handleSave = async () => {
     try {

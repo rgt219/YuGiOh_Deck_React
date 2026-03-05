@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { OverlayTrigger, Card, Container, Row, Col } from 'react-bootstrap';
 
@@ -9,7 +9,7 @@ export default function CustomDeck({ cardList }) {
                 cardList.map(card => (
                 <>
                     <OverlayTrigger
-                    key='right'
+                    key={card.instanceId}
                     placement='right'
                     overlay={
                         <Card style={{ width: '36rem' }} bg="dark" text="white">

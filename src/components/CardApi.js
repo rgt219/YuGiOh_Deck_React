@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Button from 'react-bootstrap/Button';
-import CardInfo from '../components/CardInfo';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Popover from 'react-bootstrap/Popover';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -190,16 +188,7 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
 
         </OverlayTrigger>
               <Button onClick={() => {
-                onDeleteCard(card.id)
-                  const index = deckList.mainDeck.indexOf(card.id);
-                  console.log(card.id);
-                  console.log(index);
-                  if (index > -1) {
-                      cardList.splice(index, 1);
-                      console.log(deckList.mainDeck);
-                  } else {
-                      console.log("cannot delete card");
-                  }
+                onDeleteCard(card.id);
               }
               
               } variant="outline-danger" size="sm">Delete</Button>
@@ -221,7 +210,7 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
 
                   onAddCard(newCard);
 
-                  deckList.mainDeck.push(newCard);
+                  //deckList.mainDeck.push(newCard);
                   console.log(deckList.mainDeck);
                 }}  variant="outline-success" size="sm">Add</Button>
               {/* </form> */}

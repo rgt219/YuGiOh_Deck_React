@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 export default function NavbarYGO() {
   return (
     <Navbar bg="dark" data-bs-theme="dark" fixed="top" style={{fontFamily: "Cascadia Mono"}}>
-      <Container>
+      <Container fluid>
         <Navbar.Brand href="/">ErreGeTe YGO</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
@@ -26,6 +26,10 @@ export default function NavbarYGO() {
                 Separated link
               </NavDropdown.Item>
             </NavDropdown>
+          </Nav>
+
+          <Nav>
+            <Nav.Link href="/login">Login</Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Container>
