@@ -18,6 +18,7 @@ export default function DeckBuilder()
     const [deckName, setDeckName] = useState('');
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
+    const [filtered, setFiltered] = useState(cardList);
 
     const handleTextareaChange = (event) => {
         // Update the state with the current value from the input field
@@ -45,7 +46,7 @@ export default function DeckBuilder()
         deckList.title = String(deckName);
         deckList.id = (String)(Math.floor(Math.random() * (1000000 - 1 + 1)) + 1);
         
-      const response = await fetch("http://localhost:5000/api/mongodb/DeckListMongoDb", {
+      const response = await fetch("http://localhost:5276/api/mongodb/DeckListMongoDb", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -92,19 +93,12 @@ export default function DeckBuilder()
 
 
 
-            <Modal show={show} onHide={handleClose}>
+            <Modal show={show} onHide={handleClose} >
                 <Modal.Header closeButton>
-                <Modal.Title>Modal heading</Modal.Title>
+                <Modal.Title>Success!</Modal.Title>
                 </Modal.Header>
-                <Modal.Body>Woohoo, you are reading this text in a modal!</Modal.Body>
-                <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose}>
-                    Close
-                </Button>
-                <Button variant="primary" onClick={handleClose}>
-                    Save Changes
-                </Button>
-                </Modal.Footer>
+                <Modal.Body>Deck "{deckName}" has been saved.   
+                </Modal.Body>
             </Modal>
         </>
     )

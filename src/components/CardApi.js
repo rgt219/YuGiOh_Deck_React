@@ -51,7 +51,7 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
         });
     }, []);
 
-    fetch("http://localhost:5000/api/mongodb/DeckListMongoDb")
+    fetch("http://localhost:5276/api/mongodb/DeckListMongoDb")
       .then(response => {
         // Clone the response so it can be read in both the console and the next .then()
         const responseClone = response.clone(); 
@@ -189,41 +189,22 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
 
 
         </OverlayTrigger>
-              <Button onClick={() => onDeleteCard(card.id)} variant="outline-danger">- </Button>
-              <OverlayTrigger trigger="click" placement="left" overlay={<Popover id="popover-basic">
-                <Container fluid="md">
-                  
-                  <Popover.Header as="h3">
-                  <Row>
-                    <Col>
-                      {card.name}
-                    </Col>
-                    <Col xs lg="2">
-                    <div className="level-flex">
-                      <img src="./images/level.png" alt=""></img>
-                      <span>{card.level}</span>
-                    </div>
-                    </Col>
-                  </Row>
-                  </Popover.Header>
-                </Container>
-                          
-                          <Popover.Body>
-                            {card.race} / {card.frameType}<br></br>
-                            {card.desc}
-                          </Popover.Body>
-                        </Popover>}>
-                  <Button onClick={() => console.log('Info')}  variant="outline-info" className="">info   </Button>
-              </OverlayTrigger>
-
-              {/* <form onSubmit={handleSubmit}>
-                <input
-                  type="text"
-                  value={card}
-                  onChange={(e) => card(e.target.value)}
-                  placeholder="Enter item name"
-                /> */}
-                <Button onClick={() => {
+              <Button onClick={() => {
+                onDeleteCard(card.id)
+                  const index = deckList.mainDeck.indexOf(card.id);
+                  console.log(card.id);
+                  console.log(index);
+                  if (index > -1) {
+                      cardList.splice(index, 1);
+                      console.log(deckList.mainDeck);
+                  } else {
+                      console.log("cannot delete card");
+                  }
+              }
+              
+              } variant="outline-danger" size="sm">Delete</Button>
+              
+              <Button onClick={() => {
                   const newCard = {
                     id: String(card.id),
                     name: String(card.name),
@@ -241,8 +222,8 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
                   onAddCard(newCard);
 
                   deckList.mainDeck.push(newCard);
-                  console.log(deckList);
-                }}  variant="outline-success">+</Button>
+                  console.log(deckList.mainDeck);
+                }}  variant="outline-success" size="sm">Add</Button>
               {/* </form> */}
             
             {/* <p style={{color: "white", fontFamily: "Cascadia Mono"}}>{card.name}</p> */}
