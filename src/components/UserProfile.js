@@ -29,6 +29,10 @@ export default function UserProfile({ user }) {
 
     if (!user) return <div className="md-theme-bg text-info p-5">ACCESS_DENIED: PLEASE_LOGIN</div>;
 
+    const deleteDeck = async () => {
+        
+    }
+
     return (
         <div className="md-theme-bg min-vh-100 py-5 mt-5">
             <Container>
@@ -72,6 +76,14 @@ export default function UserProfile({ user }) {
                                             <div className="mt-3">
                                                 <Button as={Link} to={`/deckdetails/${deck.id}`} className="md-btn-outline w-100 mb-2">
                                                     VIEW_DATA
+                                                </Button>
+                                                <Button 
+                                                    as={Link} 
+                                                    to={`/deckdetails/${deck.id}`} 
+                                                    className="md-btn-delete w-100 mb-2" 
+                                                    variant="outline-danger"
+                                                    onClick={deleteDeck()}>
+                                                    DELETE_DECK
                                                 </Button>
                                             </div>
                                         </Card.Body>

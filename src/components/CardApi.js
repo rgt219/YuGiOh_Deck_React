@@ -82,60 +82,65 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div>
-      <Navbar expand="lg">
-      <Container fluid>
-        <Navbar.Toggle aria-controls="navbarScroll" />
-        <Navbar.Collapse id="navbarScroll">
-          <Form className="w-100">
+    <div className="md-api-container">
+      <Form>
+      {/* Search Input Row */}
+      <Row className="mb-3">
+        <Col>
+          <Form.Group controlId="cardSearch">
             <Form.Control
               type="search"
-              placeholder="Search for a card..."
-              aria-label="Search"
+              placeholder="SYSTEM_SEARCH: ENTER CARD NAME..."
+              className="md-search-input"
+              value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ backgroundColor: '#f0f0f0', color: '#333' }}
-              expand="lg"
             />
-          </Form>
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
-      
-      <div class="d-flex gap-3">
-        <div style={{width: "25%"}}>
-              <select id="frame_select" class="form-select"onChange={(e) => setSelectedFrame(e.target.value)} value={selectedFrame}>
-                <option defaultValue key={selectedFrame}>Frame Type</option>
-                {frameTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
-        </div>
-        <div style={{width: "25%"}}>
-            <select class="form-select" onChange={(e) => setCardLevel(e.target.value)} value={parseInt(cardLevel)}>
-              <option defaultValue key={cardLevel}>Level</option>
-            {cardLevels.map(type => (
+          </Form.Group>
+        </Col>
+      </Row>
+
+      {/* Filter Row */}
+      <Row className="g-2 mb-4">
+        <Col md={4}>
+          <Form.Select 
+            className="md-select-box"
+            onChange={(e) => setSelectedFrame(e.target.value)} 
+            value={selectedFrame}
+          >
+            <option value="all">FRAME_TYPE</option>
+            {frameTypes.map(type => (
               <option key={type} value={type}>{type}</option>
             ))}
-          </select>
-        </div>
-        <div style={{width: "25%"}}>
-            <select class="form-select" onChange={(e) => setAttack(e.target.value)} value={cardLevel}>
-              <option defaultValue key={attack}>Attack</option>
-            {/* {attack.map(type => (
-              <option key={type} value={type}>{type}</option>
-            ))} */}
-          </select>
-        </div>
-        <div style={{width: "25%"}}>
-            <select class="form-select" onChange={(e) => setAttribute(e.target.value)} value={attribute}>
-              <option defaultValue key={attribute}>Attribute</option>
-            {attributes.map(type => (
-              <option key={type} value={type}>{type}</option>
+          </Form.Select>
+        </Col>
+
+        <Col md={3}>
+          <Form.Select 
+            className="md-select-box"
+            onChange={(e) => setCardLevel(e.target.value)} 
+            value={cardLevel}
+          >
+            <option value="">LEVEL</option>
+            {cardLevels.map(lvl => (
+              <option key={lvl} value={lvl}>{lvl}</option>
             ))}
-          </select>
-        </div>
-        
-    </div>
+          </Form.Select>
+        </Col>
+
+        <Col md={5}>
+          <Form.Select 
+            className="md-select-box"
+            onChange={(e) => setAttribute(e.target.value)} 
+            value={attribute}
+          >
+            <option value="">ATTRIBUTE</option>
+            {attributes.map(attr => (
+              <option key={attr} value={attr}>{attr}</option>
+            ))}
+          </Form.Select>
+        </Col>
+      </Row>
+    </Form>
       
       
       
@@ -182,8 +187,8 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
                 onDeleteCard(card.id);
               }
               
-              } variant="outline-danger" size="sm">Delete</Button>
-              
+              } variant="outline-danger" size="sm" className="md-btn-delete w-100">Delete</Button>
+              <div className="d-flex flex-column gap-1 mt-2">
               <Button onClick={() => {
                   const newCard = {
                     id: String(card.id),
@@ -203,7 +208,8 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
 
                   //deckList.mainDeck.push(newCard);
                   console.log(deckList.mainDeck);
-                }}  variant="outline-success" size="sm">Add</Button>
+                }}  variant="outline-success" size="sm" className="md-btn-add w-100">Add</Button>
+                </div>
               {/* </form> */}
             
             {/* <p style={{color: "white", fontFamily: "Cascadia Mono"}}>{card.name}</p> */}
