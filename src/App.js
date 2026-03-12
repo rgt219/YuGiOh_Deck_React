@@ -21,6 +21,7 @@ import NavbarYGO from './components/NavbarYGO';
 import Home from './components/Home'
 import Register from './components/Register';
 import UserProfile from './components/UserProfile';
+import DeckProfileDetails from './components/DeckProfileDetails';
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -50,6 +51,7 @@ function App() {
           <Route path="/decks/:deckId" element={<DeckDetails />} />
           <Route path="/register" element={<Register />}/>
           <Route path="/profile" element={<UserProfile user={user}/>}/>
+          <Route path="/deckprofiledetails/:deckId" element={<DeckProfileDetails />} />
         </Routes>
       </DecksProvider>
     </Router>

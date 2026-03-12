@@ -10,10 +10,10 @@ import '../mdstyles.css';
 
 export default function DeckBuilder({user})
 {
-    const [cardList, setCardList] = useState([]);
+    const [cardList, setCardList] = useState([]); // This is your active deck (objects)
+    const [masterCards, setMasterCards] = useState([]); // This is the 12,000 card DB
     const [deckName, setDeckName] = useState('');
     const [show, setShow] = useState(false);
-    const handleClose = () => setShow(false);
 
     const handleTextareaChange = (event) => {
         setDeckName(event.target.value);
@@ -53,45 +53,45 @@ export default function DeckBuilder({user})
     }, [cardList]);
 
     const handleSave = async () => {
-    try {
-        console.log(user);
-        if(!user || !user.id) {
-            alert("CRITICAL_ERROR: USER_ID_NOT_FOUND. LOG IN OR THIS SITE WILL SELF DESTRUCT");
-            return;
+        try {
+            
+            if(!user || !user.id) {
+                alert("CRITICAL_ERROR: USER_ID_NOT_FOUND. LOG IN OR THIS SITE WILL SELF DESTRUCT");
+                return;
+            }
+
+            console.log(JSON.stringify(deckList));
+            deckList.title = String(deckName) || "NEW_DECKLIST";
+            deckList.id = (String)(Math.floor(Math.random() * (1000000 - 1 + 1)) + 1);
+            deckList.userId = user.id;
+            deckList.extraDeck = [];
+            deckList.sideDeck = [];
+
+            console.log("COMMENSING_DATABASE_UPLINK");
+            
+        const response = await fetch("https://api.happybush-e43d89b2.eastus.azurecontainerapps.io/api/mongodb/DeckListMongoDb", {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(deckList),
+        });
+
+        console.log(response.body);
+        setShow(true);
+
+        if (response.ok) {
+            // Handle success
+            console.log('Data saved successfully!');
+            // Optional: clear the array or show a success message
+        } else {
+            // Handle error
+            console.error('Failed to save data. Sorry buddy');
         }
-
-        console.log(JSON.stringify(deckList));
-        deckList.title = String(deckName) || "NEW_DECKLIST";
-        deckList.id = (String)(Math.floor(Math.random() * (1000000 - 1 + 1)) + 1);
-        deckList.userId = user.id;
-        deckList.extraDeck = [];
-        deckList.sideDeck = [];
-
-        console.log("COMMENSING_DATABASE_UPLINK");
-        
-      const response = await fetch("https://localhost:5276/api/mongodb/DeckListMongoDb", {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(deckList),
-      });
-
-      console.log(response.body);
-      setShow(true);
-
-      if (response.ok) {
-        // Handle success
-        console.log('Data saved successfully!');
-        // Optional: clear the array or show a success message
-      } else {
-        // Handle error
-        console.error('Failed to save data. Sorry buddy');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
+        } catch (error) {
+        console.error('Error:', error);
+        }
+    };
 
     return (
         <div className="master-duel-theme py-5 mt-5">

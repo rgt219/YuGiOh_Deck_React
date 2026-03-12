@@ -42,7 +42,7 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
         });
     }, []);
 
-    fetch("https://localhost:5276/api/mongodb/DeckListMongoDb")
+    fetch("https://api.happybush-e43d89b2.eastus.azurecontainerapps.io/api/mongodb/DeckListMongoDb")
       .then(response => {
         // Clone the response so it can be read in both the console and the next .then()
         const responseClone = response.clone(); 
@@ -63,21 +63,29 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
 
   // 2. Filter logic: Filter cards based on search input [4]
 
-    const frameTypes = ["All", ...new Set(cards.map(card => card.frameType))];
+    const frameTypes = ["all", ...new Set(cards.map(card => card.frameType))];
     const cardLevels = ['', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
     const attributes = ['', ...new Set(cards.map(card => card.attribute))];
 
-    const filteredCards = cards.filter(card => {
-        const matchesText = card.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                            card.desc.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesFrame = selectedFrame === 'all' || card.frameType === selectedFrame;
-        const matchesLevel = cardLevel === '' || card.level === parseInt(cardLevel);
-        const matchesAttack = attack === parseInt(card.attack);
-        const matchesDefense = defense === parseInt(card.defense);
-        const matchesAttribute = attribute === card.attribute;
-        return matchesText && matchesFrame && matchesLevel && (matchesAttribute || matchesAttack || matchesDefense);
-    },
-  [cards, searchTerm, selectedFrame, cardLevel, attribute]);
+    const filteredCards = React.useMemo(() => {
+    const results = cards.filter(card => {
+            // Fix: Use lowercase 'all' consistently
+            const matchesFrame = selectedFrame === 'all' || card.frameType === selectedFrame;
+            
+            const matchesText = !searchTerm || 
+                card.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                card.desc.toLowerCase().includes(searchTerm.toLowerCase());
+
+            const matchesLevel = !cardLevel || card.level === parseInt(cardLevel);
+            const matchesAttribute = !attribute || card.attribute === attribute;
+
+            return matchesText && matchesFrame && matchesLevel && matchesAttribute;
+        });
+
+        // PERF FIX: Only render the first 50-100 cards. 
+        // This removes the "DOM lag" entirely.
+        return results.slice(0, 60); 
+    }, [cards, searchTerm, selectedFrame, cardLevel, attribute]);
 
   if (loading) return <div>Loading...</div>;
 

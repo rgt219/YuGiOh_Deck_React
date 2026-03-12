@@ -4,12 +4,10 @@ import { OverlayTrigger, Card, Container, Row, Col } from 'react-bootstrap';
 
 export default function CustomDeck({ cardList }) {
     return (
-        <div class="gallery__small" style={{overflowX: 'visible'}}>
-                {
-                cardList.map(card => (
-                <>
-                    <OverlayTrigger
-                    key={card.instanceId}
+        <div className="gallery__small" style={{overflowX: 'visible'}}>
+            {cardList.map(card => (
+                <OverlayTrigger
+                    key={card.instanceId} // Use the unique instance ID
                     placement='right'
                     overlay={
                         <Card style={{ width: '36rem' }} bg="dark" text="white">
@@ -37,12 +35,11 @@ export default function CustomDeck({ cardList }) {
                         </Card>
                     }>
                         <div className="gallery__item__small">
-                        <div key={card.id}>
-                            <img src={card.image} alt={card.name} className="card-image"/>
-                        </div>
+                            <div key={card.instanceId}> 
+                                <img src={card.image} alt={card.name} className="card-image"/>
+                            </div>
                         </div>
                     </OverlayTrigger>
-                    </>
                 ))}
         </div>
         

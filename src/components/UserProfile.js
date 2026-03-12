@@ -9,29 +9,58 @@ export default function UserProfile({ user }) {
 
     useEffect(() => {
         const fetchDecks = async () => {
-            if (!user?.id) return;
-            try {
-                // Fetching decks filtered by the logged-in User ID
-                const response = await fetch(`https://localhost:5276/api/mongodb/DeckListMongoDb/user/${user.id}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    setUserDecks(data);
-                }
-            } catch (error) {
-                console.error("DATABASE_LINK_FAILURE:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+        // Guard Clause: Don't fetch if user data is missing or invalid
+        if (!user || !user.id || isNaN(parseInt(user.id))) {
+            return; 
+        }
 
-        fetchDecks();
-    }, [user]);
+        try {
+            // Force the ID to be an integer in the URL
+            const userIdInt = parseInt(user.id);
+            const response = await fetch(`https://api.happybush-e43d89b2.eastus.azurecontainerapps.io/api/mongodb/DeckListMongoDb/user/${user.id}`);
+            
+            if (response.ok) {
+                const data = await response.json();
+                setUserDecks(data);
+            } else {
+                // If the API returns 404, just set decks to empty instead of crashing
+                setUserDecks([]);
+            }
+        } catch (error) {
+            console.error("DATABASE_LINK_FAILURE:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    fetchDecks();
+}, [user]);
 
     if (!user) return <div className="md-theme-bg text-info p-5">ACCESS_DENIED: PLEASE_LOGIN</div>;
 
-    const deleteDeck = async () => {
-        
+    const handleDeleteDeck = async (deckId) => {
+    if (!user?.id) return;
+
+    if (!window.confirm("SYSTEM_CONFIRMATION: PURGE_ARCHIVED_DECK?")) return;
+
+    try {
+        const response = await fetch(`https://api.happybush-e43d89b2.eastus.azurecontainerapps.io/api/mongodb/DeckListMongoDb/${deckId}/user/${user.id}`, {
+            method: 'DELETE',
+        });
+
+        if (response.ok) {
+            // This is the "React Way" to re-render:
+            // Filter out the deck that matches the deleted ID
+            setUserDecks(prevDecks => prevDecks.filter(deck => deck.id !== deckId));
+            
+            console.log("UI_SYNCHRONIZED: DECK_REMOVED");
+        } else {
+            console.error("DELETION_FAILED");
+        }
+    } catch (error) {
+        console.error("NETWORK_ERROR", error);
     }
+};
 
     return (
         <div className="md-theme-bg min-vh-100 py-5 mt-5">
@@ -67,22 +96,26 @@ export default function UserProfile({ user }) {
                                         <Card.Body className="d-flex flex-column justify-content-between">
                                             <div>
                                                 <h5 className="text-info">{deck.title?.toUpperCase()}</h5>
-                                                <img src={deck.mainDeck[0].image} alt="" style={{width: "100%", height: "85%"}}/>
+                                                <img 
+                                                    src={deck.mainDeck[0]?.image || "/images/card_back_placeholder.png"} 
+                                                    alt="" 
+                                                    style={{width: "100%", height: "85%", objectFit: "contain"}}
+                                                />
                                                 <p className="md-text-disabled small">
                                                     MAIN: {deck.mainDeck?.length || 0} | 
                                                     EXTRA: {deck.extraDeck?.length || 0}
                                                 </p>
                                             </div>
                                             <div className="mt-3">
-                                                <Button as={Link} to={`/deckdetails/${deck.id}`} className="md-btn-outline w-100 mb-2">
+                                                <Button as={Link} to={`/deckprofiledetails/${deck.id}`} className="md-btn-outline w-100 mb-2">
                                                     VIEW_DATA
                                                 </Button>
                                                 <Button 
-                                                    as={Link} 
-                                                    to={`/deckdetails/${deck.id}`} 
+                                                    // as={Link} 
+                                                    // to={`/deckdetails/${deck.id}`} 
                                                     className="md-btn-delete w-100 mb-2" 
                                                     variant="outline-danger"
-                                                    onClick={deleteDeck()}>
+                                                    onClick={() => handleDeleteDeck(deck.id)}>
                                                     DELETE_DECK
                                                 </Button>
                                             </div>
