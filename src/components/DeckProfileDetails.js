@@ -1,40 +1,30 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Container, Row, Col, Spinner, Button } from 'react-bootstrap';
-import CustomDeck from "./CustomDeck"; // Reusing your working deck display
+import CustomDeck from "./CustomDeck"; 
 import '../mdstyles.css';
 
 export default function DeckProfileDetails() {
-const { deckId } = useParams();
+    const { deckId } = useParams();
     const [deck, setDeck] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const loadDeckData = async () => {
             try {
-                // 1. Fetch the Master Card list (YGOPRODeck)
-                const masterRes = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php');
-                const masterData = await masterRes.json();
+                // 1. Fetch the HYDRATED deck directly from your .NET API
+                // Your backend now returns the full card objects, not just IDs!
+                const res = await fetch(`https://api.happybush-e43d89b2.eastus.azurecontainerapps.io/api/mongodb/DeckListMongoDb/${deckId}`);
                 
-                // 2. Fetch the specific deck from your Azure API
-                const deckRes = await fetch(`https://api.happybush-e43d89b2.eastus.azurecontainerapps.io/api/mongodb/DeckListMongoDb/${deckId}`);
-                if (!deckRes.ok) throw new Error("DECK_NOT_FOUND");
-                const deckData = await deckRes.json();
+                if (!res.ok) throw new Error("DECK_NOT_FOUND");
+                
+                const hydratedData = await res.json();
 
-                // 3. HYDRATION: Link your saved data to the master images
-                // This handles both full objects AND the "Thin ID" approach
-                const hydratedMain = deckData.mainDeck.map(savedItem => {
-                    const idToMatch = savedItem.id || savedItem; 
-                    const match = masterData.data.find(m => String(m.id) === String(idToMatch));
-                    
-                    return match ? {
-                        ...match,
-                        instanceId: Math.random(), // Unique key for rendering
-                        image: match.card_images[0].image_url_small
-                    } : null;
-                }).filter(Boolean);
+                console.log("AZURE_UPLINK_DATA:", hydratedData); // Add this line
 
-                setDeck({ ...deckData, mainDeck: hydratedMain });
+                // 2. Simply set the state. No manual hydration or loops needed here.
+                setDeck(hydratedData);
+
             } catch (error) {
                 console.error("ARCHIVE_ACCESS_ERROR:", error);
             } finally {
@@ -57,7 +47,6 @@ const { deckId } = useParams();
     return (
         <div className="md-theme-bg min-vh-100 py-5 mt-5">
             <Container>
-                {/* Deck Info Header */}
                 <div className="md-panel p-4 mb-4 border-info">
                     <Row className="align-items-center">
                         <Col>
@@ -68,20 +57,24 @@ const { deckId } = useParams();
                         </Col>
                         <Col xs="auto">
                             <Button as={Link} to="/profile" className="md-btn-outline">
-                                BACK_TO_PROFILE
+                                BACK TO PROFILE
                             </Button>
                         </Col>
                     </Row>
                 </div>
 
                 <Row>
-                    {/* Reusing your CustomDeck component to maintain the same UI/UX */}
                     <Col md={12} className="md-panel p-4">
                         <h5 className="text-white mb-4" style={{letterSpacing: '1px'}}>
-                            MAIN_DECK_MANIFEST ({deck.mainDeck.length}/60)
+                            MAIN DECK ({deck.mainDeck?.length || 0}/60)
                         </h5>
                         <div className="deck-scroll-container">
-                            <CustomDeck cardList={deck.mainDeck} />
+                            {/* CustomDeck receives the full card objects directly */}
+                            <CustomDeck 
+                                mainDeck={deck.mainDeck} 
+                                extraDeck={deck.extraDeck} 
+                                sideDeck={deck.sideDeck}
+                            />
                         </div>
                     </Col>
                 </Row>

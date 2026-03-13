@@ -8,59 +8,95 @@ export default function UserProfile({ user }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchDecks = async () => {
-        // Guard Clause: Don't fetch if user data is missing or invalid
-        if (!user || !user.id || isNaN(parseInt(user.id))) {
-            return; 
-        }
+        const fetchAndHydrateDecks = async () => {
+            if (!user || !user.id) return;
 
-        try {
-            // Force the ID to be an integer in the URL
-            const userIdInt = parseInt(user.id);
-            const response = await fetch(`https://api.happybush-e43d89b2.eastus.azurecontainerapps.io/api/mongodb/DeckListMongoDb/user/${user.id}`);
-            
-            if (response.ok) {
-                const data = await response.json();
-                setUserDecks(data);
-            } else {
-                // If the API returns 404, just set decks to empty instead of crashing
-                setUserDecks([]);
+            try {
+                // 1. Get raw decks from Azure
+                const response = await fetch(`https://api.happybush-e43d89b2.eastus.azurecontainerapps.io/api/mongodb/DeckListMongoDb/user/${user.id}`);
+                if (!response.ok) {
+                    setUserDecks([]);
+                    return;
+                }
+                const rawDecks = await response.json();
+
+                // 2. GET OR DOWNLOAD CACHE
+                let masterCards = [];
+                const cachedData = sessionStorage.getItem("YGOCardCache");
+
+                if (cachedData) {
+                    masterCards = JSON.parse(cachedData);
+                } else {
+                    // If cache is empty, we MUST download it here too
+                    const masterRes = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php');
+                    const result = await masterRes.json();
+                    
+                    const userCardIds = new Set(rawDecks.flatMap(d => d.mainDeck || []));
+
+                    masterCards = result.data.map(card => {
+                        const isPriority = userCardIds.has(String(card.id));
+                        
+                        return {
+                            id: card.id,
+                            image: card.card_images[0].image_url_small,
+                            // Only save the heavy text if the card is in a deck
+                            name: isPriority ? card.name : undefined,
+                            desc: isPriority ? card.desc : undefined, 
+                            attribute: isPriority ? card.attribute : undefined,
+                            level: isPriority ? card.level : undefined,
+                            race: isPriority ? card.race : undefined,
+                            type: isPriority ? card.type : undefined
+                        };
+                    });
+                    
+                    sessionStorage.setItem("YGOCardCache", JSON.stringify(masterCards));
+                }
+
+                // 3. HYDRATION
+                const hydratedDecks = rawDecks.map(deck => ({
+                    ...deck,
+                    mainDeck: (deck.mainDeck || []).map(cardId => {
+                        const match = masterCards.find(m => String(m.id) === String(cardId));
+                        return match ? match : { image: "/images/card_back_placeholder.png" };
+                    })
+                }));
+
+                setUserDecks(hydratedDecks);
+            } catch (error) {
+                console.error("DATABASE_LINK_FAILURE:", error);
+            } finally {
+                setLoading(false);
             }
-        } catch (error) {
-            console.error("DATABASE_LINK_FAILURE:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+        };
 
-    fetchDecks();
-}, [user]);
+        fetchAndHydrateDecks();
+    }, [user]);
 
     if (!user) return <div className="md-theme-bg text-info p-5">ACCESS_DENIED: PLEASE_LOGIN</div>;
 
     const handleDeleteDeck = async (deckId) => {
-    if (!user?.id) return;
+        if (!user?.id) return;
 
-    if (!window.confirm("SYSTEM_CONFIRMATION: PURGE_ARCHIVED_DECK?")) return;
+        if (!window.confirm("SYSTEM_CONFIRMATION: PURGE_ARCHIVED_DECK?")) return;
 
-    try {
-        const response = await fetch(`https://api.happybush-e43d89b2.eastus.azurecontainerapps.io/api/mongodb/DeckListMongoDb/${deckId}/user/${user.id}`, {
-            method: 'DELETE',
-        });
+        try {
+            const response = await fetch(`https://api.happybush-e43d89b2.eastus.azurecontainerapps.io/api/mongodb/DeckListMongoDb/${deckId}/user/${user.id}`, {
+                method: 'DELETE',
+            });
 
-        if (response.ok) {
-            // This is the "React Way" to re-render:
-            // Filter out the deck that matches the deleted ID
-            setUserDecks(prevDecks => prevDecks.filter(deck => deck.id !== deckId));
-            
-            console.log("UI_SYNCHRONIZED: DECK_REMOVED");
-        } else {
-            console.error("DELETION_FAILED");
+            if (response.ok) {
+                // This is the "React Way" to re-render:
+                // Filter out the deck that matches the deleted ID
+                setUserDecks(prevDecks => prevDecks.filter(deck => deck.id !== deckId));
+                
+                console.log("UI_SYNCHRONIZED: DECK_REMOVED");
+            } else {
+                console.error("DELETION_FAILED");
+            }
+        } catch (error) {
+            console.error("NETWORK_ERROR", error);
         }
-    } catch (error) {
-        console.error("NETWORK_ERROR", error);
-    }
-};
+    };
 
     return (
         <div className="md-theme-bg min-vh-100 py-5 mt-5">
@@ -78,12 +114,12 @@ export default function UserProfile({ user }) {
                             <p className=" m-0">RANK: DUELIST // ID: {user.id}</p>
                         </Col>
                         <Col xs="auto" className="text-end">
-                            <div className="text-info">DECKS_ARCHIVED: {userDecks.length}</div>
+                            <div className="text-info">DECKS ARCHIVED: {userDecks.length}</div>
                         </Col>
                     </Row>
                 </div>
 
-                <h4 className="text-white mb-4" style={{ letterSpacing: '2px' }}>SAVED_DECKLISTS</h4>
+                <h4 className="text-white mb-4" style={{ letterSpacing: '2px' }}>SAVED DECKLISTS</h4>
 
                 {loading ? (
                     <div className="text-center text-info"><Spinner animation="border" /></div>
@@ -95,12 +131,20 @@ export default function UserProfile({ user }) {
                                     <Card className="md-nav-card h-100">
                                         <Card.Body className="d-flex flex-column justify-content-between">
                                             <div>
-                                                <h5 className="text-info">{deck.title?.toUpperCase()}</h5>
-                                                <img 
-                                                    src={deck.mainDeck[0]?.image || "/images/card_back_placeholder.png"} 
-                                                    alt="" 
-                                                    style={{width: "100%", height: "85%", objectFit: "contain"}}
-                                                />
+                                                <h5 className="text-info mb-3" style={{ fontFamily: 'Cascadia Mono', letterSpacing: '1px' }}>
+                                                    {deck.title?.toUpperCase()}
+                                                </h5>
+                                                
+                                                {/* NEW: Master Duel Style Image Container */}
+                                                <div className="md-card-img-container mb-3">
+                                                    <img 
+                                                        src={deck.mainDeck[0]?.image || "/images/card_back_placeholder.png"} 
+                                                        alt="" 
+                                                        className="md-card-hover-zoom"
+                                                        onError={(e) => { e.target.src = "/images/card_back_placeholder.png"; }}
+                                                    />
+                                                </div>
+
                                                 <p className="md-text-disabled small">
                                                     MAIN: {deck.mainDeck?.length || 0} | 
                                                     EXTRA: {deck.extraDeck?.length || 0}
@@ -108,15 +152,13 @@ export default function UserProfile({ user }) {
                                             </div>
                                             <div className="mt-3">
                                                 <Button as={Link} to={`/deckprofiledetails/${deck.id}`} className="md-btn-outline w-100 mb-2">
-                                                    VIEW_DATA
+                                                    VIEW DECK PROFILE
                                                 </Button>
                                                 <Button 
-                                                    // as={Link} 
-                                                    // to={`/deckdetails/${deck.id}`} 
                                                     className="md-btn-delete w-100 mb-2" 
                                                     variant="outline-danger"
                                                     onClick={() => handleDeleteDeck(deck.id)}>
-                                                    DELETE_DECK
+                                                    DELETE DECK
                                                 </Button>
                                             </div>
                                         </Card.Body>

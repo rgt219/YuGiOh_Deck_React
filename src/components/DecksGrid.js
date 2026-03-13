@@ -105,20 +105,4 @@ export default function DecksGrid({decks, decklist, toggleDeckList})
         </div>
         
     );
-
-//  return (
-//         <HoverVideoPlayer
-//             videoSrc="../videos/Magia.mp4"
-//             pausedOverlay={
-//                 <img src="../images/Magia.jpg" alt="" 
-//                 style={{
-//             // Make the image expand to cover the video's dimensions
-//             width: '100%',
-//             height: '100%',
-//             objectFit: 'cover',
-//           }}/>
-//             }
-//             loadingOverlay={<div className="loading-spinner"/>}
-//             />
-//     );
  }

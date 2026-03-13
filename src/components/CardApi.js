@@ -5,20 +5,16 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import { Navbar, Form, FormControl, NavDropdown, Nav, Card } from 'react-bootstrap';
+import { Navbar, Form, FormControl, NavDropdown, Nav, Card, Spinner } from 'react-bootstrap';
 
 export const deckList = {
-      mainDeck: [],
-      extraDeck: [
-
-      ], 
-      sideDeck: [
-
-      ],
-      id: '30',
-      title: '',
-      userId: ''
-    }
+    mainDeck: [], // This will now store ID strings, not card objects
+    extraDeck: [],
+    sideDeck: [],
+    id: '',
+    title: '',
+    userId: ''
+};
 
 
 export default function CardApi({ onAddCard, onDeleteCard, cardList }) 
@@ -31,37 +27,67 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
     const [attack, setAttack] = useState();
     const [defense, setDefense] = useState();
     const [attribute, setAttribute] = useState();
+    const [hoveredCardData, setHoveredCardData] = useState(null);
+
+    const handleMouseEnter = async (cardId) => {
+    // If we already have the data for this card, don't fetch again
+      if (hoveredCardData && hoveredCardData.id === cardId) return;
+
+          try {
+              const res = await fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?id=${cardId}`);
+              const result = await res.json();
+              setHoveredCardData(result.data[0]);
+          } catch (error) {
+              console.error("FAILED_TO_FETCH_DESCRIPTION:", error);
+          }
+      };
 
     // 1. Fetch data from YGOPRODeck API [3]
     useEffect(() => {
-        fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php')
-        .then(response => response.json())
-        .then(data => {
-            setCards(data.data);
+    const fetchAndCache = async () => {
+        try {
+            const cached = sessionStorage.getItem("YGOMasterCache");
+            if (cached) {
+                setCards(JSON.parse(cached));
+                setLoading(false);
+                return;
+            }
+
+            const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php');
+            const data = await response.json();
+
+            // THINNING: Keep only the essentials for the Editor
+            const thinCards = data.data.map(card => ({
+                id: card.id,
+                name: card.name,
+                type: card.type,
+                frameType: card.frameType,
+                desc: card.desc,
+                atk: card.atk,
+                def: card.def,
+                level: card.level,
+                race: card.race,
+                attribute: card.attribute,
+                image: card.card_images[0].image_url_small // We need this for the .image_url_small
+            }));
+
+            // Save the 2MB version instead of the 10MB version
+            try {
+                sessionStorage.setItem("YGOMasterCache", JSON.stringify(thinCards));
+            } catch (e) {
+                console.warn("Storage full, continuing in-memory only.");
+            }
+
+            setCards(thinCards);
             setLoading(false);
-        });
-    }, []);
-
-    fetch("https://api.happybush-e43d89b2.eastus.azurecontainerapps.io/api/mongodb/DeckListMongoDb")
-      .then(response => {
-        // Clone the response so it can be read in both the console and the next .then()
-        const responseClone = response.clone(); 
-        // Check if the response status is in the 200 range (success)
-        if (!response.ok) { 
-          // Log the raw HTML error page content
-          responseClone.text().then(text => console.error('Server Response (HTML):', text));
-          throw new Error('Network response was not ok');
+        } catch (error) {
+            console.error("FAILED_TO_LOAD_CARDS:", error);
         }
-        return response.json(); // Attempt to parse as JSON
-      })
-      .then(data => {
-        //console.log('JSON Data:', data);
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-      });
+    };
 
-  // 2. Filter logic: Filter cards based on search input [4]
+    fetchAndCache();
+}, []);
+
 
     const frameTypes = ["all", ...new Set(cards.map(card => card.frameType))];
     const cardLevels = ['', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
@@ -159,38 +185,47 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
             className="card-container">
 
             <OverlayTrigger
-              key='left'
-              placement='left'
-              overlay={
-                <Card style={{ width: '36rem' }} bg="dark" text="white">
-                  <Card.Body>
-                    <Container style={{margin: 0}}>
-                      <Row>
-                        <Col>
-                          <Card.Title style={{fontFamily: "Cascadia Mono"}}>
-                            {card.name}
-                          </Card.Title>
-                        </Col>
-                        <Col xs lg="3">
-                          {card.attribute} | 
-                          <img src={"/images/level.png"} alt="" style={{width: "15px", height: "15px"}}/>{card.level}
-                        </Col>
-                      </Row>
-                    </Container>
-                    <Card.Subtitle className="mb-2 text-grey">
-                      {card.race} / {card.type}
-                    </Card.Subtitle>
-                    <Card.Text bg="dark">
-                      {card.desc}
-                    </Card.Text>
-                  </Card.Body>
-                </Card>
-          }
-        >
-            <img class="card_details" src={card.card_images[0].image_url_small} alt=""/>
-
-
-        </OverlayTrigger>
+                key={card.id}
+                placement="left"
+                onEnter={() => handleMouseEnter(card.id)} // Triggers when hover starts
+                overlay={
+                  <Card style={{ width: '36rem' }} bg="dark" text="white" className="border-info">
+                    <Card.Body>
+                      {hoveredCardData && String(hoveredCardData.id) === String(card.id) ? (
+                        <>
+                          <Container style={{ margin: 0 }}>
+                            <Row>
+                              <Col>
+                                <Card.Title style={{ fontFamily: "Cascadia Mono" }}>
+                                  {hoveredCardData.name}
+                                </Card.Title>
+                              </Col>
+                              <Col xs lg="3">
+                                {hoveredCardData.attribute} | 
+                                <img src={"/images/level.png"} alt="" style={{ width: "15px", height: "15px" }} />
+                                {hoveredCardData.level}
+                              </Col>
+                            </Row>
+                          </Container>
+                          <Card.Subtitle className="mb-2 text-muted">
+                            {hoveredCardData.race} / {hoveredCardData.type}
+                          </Card.Subtitle>
+                          <Card.Text>
+                            {hoveredCardData.desc}
+                          </Card.Text>
+                        </>
+                      ) : (
+                        <div className="text-center p-3">
+                          <Spinner animation="border" size="sm" variant="info" className="me-2" />
+                          <span className="text-info">ACCESSING_DATABASE...</span>
+                        </div>
+                      )}
+                    </Card.Body>
+                  </Card>
+                }
+              >
+                <img className="card_details" src={card.image} alt="" />
+              </OverlayTrigger>
               <Button onClick={() => {
                 onDeleteCard(card.id);
               }
@@ -198,29 +233,19 @@ export default function CardApi({ onAddCard, onDeleteCard, cardList })
               } variant="outline-danger" size="sm" className="md-btn-delete w-100">Delete</Button>
               <div className="d-flex flex-column gap-1 mt-2">
               <Button onClick={() => {
+                  const extraDeckFrames = ['fusion', 'synchro', 'xyz', 'link', 'fusion_pendulum', 'synchro_pendulum', 'xyz_pendulum'];
+                  const isExtraDeck = extraDeckFrames.includes(card.frameType?.toLowerCase());
+
+                  // Just pass the card properties directly
                   const newCard = {
-                    id: String(card.id),
-                    name: String(card.name),
-                    type: String(card.type),
-                    frameType: card.frameType,
-                    desc: String(card.desc),
-                    atk: parseInt(card.atk),
-                    def: parseInt(card.def),
-                    level: parseInt(card.level),
-                    race: String(card.race),
-                    attribute: String(card.attribute),
-                    image: card.card_images[0].image_url_small
-                  }
+                      ...card, // This spreads all the thinned properties (id, name, desc, image, etc.)
+                      isExtraDeck: isExtraDeck 
+                  };
 
                   onAddCard(newCard);
-
-                  //deckList.mainDeck.push(newCard);
-                  console.log(deckList.mainDeck);
-                }}  variant="outline-success" size="sm" className="md-btn-add w-100">Add</Button>
+                  console.log(`Added to ${isExtraDeck ? 'EXTRA' : 'MAIN'} DECK:`, newCard.name);
+              }} variant="outline-success" size="sm" className="md-btn-add w-100">Add</Button>
                 </div>
-              {/* </form> */}
-            
-            {/* <p style={{color: "white", fontFamily: "Cascadia Mono"}}>{card.name}</p> */}
             
           </div>
           </div>

@@ -99,17 +99,5 @@ export default function Home({user}) {
             <Footer />
         </div>
 
-      {/* <Carousel.Item>
-              <header class="absolute inset-x-0 top-0 z-50">
-                  <img className='ygoss' src='./images/ygoss2.jpg' alt="yugioh" />
-              </header>
-            </Carousel.Item>
-
-            <Carousel.Item>
-              <header class="absolute inset-x-0 top-0 z-50">
-                  <img className='ygoss' src='./images/ygoss3.jpg' alt="yugioh" />
-              </header>
-            </Carousel.Item> */}
-
 </>)
 }

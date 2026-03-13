@@ -2,7 +2,6 @@ import React from 'react';
 import HoverVideoPlayer from 'react-hover-video-player';
 import '../styles.css'
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import BlueEyes from './BlueEyes';
 
 
 export default function DeckBoss({deck, isDeckListed, toggleDeckList})

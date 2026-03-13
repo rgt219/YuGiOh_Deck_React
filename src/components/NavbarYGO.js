@@ -32,9 +32,9 @@ export default function NavbarYGO({ user, onLogout }) {
                   align="end"
                   className="terminal-user-link"
                 >
-                  <NavDropdown.Item as={Link} to="/profile">VIEW_PROFILE</NavDropdown.Item>
+                  <NavDropdown.Item as={Link} to="/profile">VIEW PROFILE</NavDropdown.Item>
                   <NavDropdown.Divider />
-                  <NavDropdown.Item onClick={onLogout}>DISCONNECT_SESSION</NavDropdown.Item>
+                  <NavDropdown.Item onClick={onLogout}>LOGOUT</NavDropdown.Item>
                 </NavDropdown>
                 <div className="empty-avatar ms-2"></div>
               </div>
